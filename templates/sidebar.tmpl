@@ -1,0 +1,19 @@
+Tabelle 2. Liga
+-
+\# | Team | Points
+:-:|---|:-:
+{% for entry in table -%}
+{{loop.index}} | {{entry['name']}} | {{entry['points']}}
+{% endfor %}
+
+Nächste Spiele
+-
+When? | Who?
+---|---
+{% for e in next_games -%}
+{% if e['home'] == 'Grazer AK 1902' -%}
+**{{e['date']}} {{e['time']}}** | **{{e['home']}} - {{e['away']}}**
+{% else -%}
+{{e['date']}} {{e['time']}} | {{e['home']}} - {{e['away']}}
+{% endif -%}
+{% endfor %}
