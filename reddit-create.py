@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.11
+import os
 import requests
 import jinja2
 import praw
@@ -115,8 +116,10 @@ def main():
     reddit = praw.Reddit(user_agent="GAK mod")
     subreddit = reddit.subreddit("grazerak")
 
+    cur_path = os.path.dirname(os.path.abspath(__file__)) + '/'
+    templ_path = cur_path + "templates/"
     jenv = jinja2.Environment(
-        loader=jinja2.FileSystemLoader("templates/"))
+        loader=jinja2.FileSystemLoader(templ_path))
     sidebar_tmpl = jenv.get_template("sidebar.tmpl")
     timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
     sidebar_tmpl.globals['timestamp'] = timestamp
@@ -133,12 +136,12 @@ def main():
     next_games = get_next_games(gameplan)
 
     content = sidebar_tmpl.render(table=table, next_games=next_games)
-    with open("output/sidebar.txt", 'w') as f:
+    with open(cur_path + "output/sidebar.txt", 'w') as f:
         f.write(content)
     pub_sidebar(subreddit, content)
 
     content = gameplan_tmpl.render(gameplan=gameplan)
-    with open("output/gameplan.txt", 'w') as f:
+    with open(cur_path + "output/gameplan.txt", 'w') as f:
         f.write(content)
     gp_title = get_gp_title(gameplan)
     update_gp_post(reddit, subreddit, gp_title, content)
