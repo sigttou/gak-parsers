@@ -85,17 +85,43 @@ def get_next_games(gameplan):
     return next_games
 
 
-def pub_sidebar(content):
-    reddit = praw.Reddit(user_agent="GAK mod")
-    subreddit = reddit.subreddit("grazerak")
+def pub_sidebar(subreddit, content):
     subreddit.wiki["config/sidebar"].edit(content=content)
 
 
+def update_gp_post(reddit, subreddit, title, content):
+    # fix search with space fails
+    for post in subreddit.search(title.split()[0], sort='new'):
+        if post.author == reddit.user.me():
+            break
+    else:
+        post = subreddit.submit(title, selftext="placeholder")
+    post.edit(content)
+    post.mod.sticky(bottom=False, state=True)
+
+
+def get_gp_title(gameplan):
+    title = "Spielplan "
+    title += datetime.strftime(datetime.strptime(gameplan[0]['date'],
+                                                 "%d.%m.%Y"),
+                               "%Y")
+    title += datetime.strftime(datetime.strptime(gameplan[-1]['date'],
+                                                 "%d.%m.%Y"),
+                               "/%y")
+    return title
+
+
 def main():
+    reddit = praw.Reddit(user_agent="GAK mod")
+    subreddit = reddit.subreddit("grazerak")
+
     jenv = jinja2.Environment(
         loader=jinja2.FileSystemLoader("templates/"))
     sidebar_tmpl = jenv.get_template("sidebar.tmpl")
+    timestamp = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")
+    sidebar_tmpl.globals['timestamp'] = timestamp
     gameplan_tmpl = jenv.get_template("gameplan.tmpl")
+    gameplan_tmpl.globals['timestamp'] = timestamp
     table_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
                 "&file=/?proxy=daten/BL2/20222023/tabellen/tabelle" + \
                 "_gesamt_1-23.html"
@@ -109,11 +135,13 @@ def main():
     content = sidebar_tmpl.render(table=table, next_games=next_games)
     with open("output/sidebar.txt", 'w') as f:
         f.write(content)
-    pub_sidebar(content)
+    pub_sidebar(subreddit, content)
 
     content = gameplan_tmpl.render(gameplan=gameplan)
     with open("output/gameplan.txt", 'w') as f:
         f.write(content)
+    gp_title = get_gp_title(gameplan)
+    update_gp_post(reddit, subreddit, gp_title, content)
 
     return
 
