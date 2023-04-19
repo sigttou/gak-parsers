@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import requests
 import jinja2
+import praw
 from datetime import datetime
 from bs4 import BeautifulSoup
 
@@ -84,6 +85,12 @@ def get_next_games(gameplan):
     return next_games
 
 
+def pub_sidebar(content):
+    reddit = praw.Reddit(user_agent="GAK mod")
+    subreddit = reddit.subreddit("grazerak")
+    subreddit.wiki["config/sidebar"].edit(content=content)
+
+
 def main():
     jenv = jinja2.Environment(
         loader=jinja2.FileSystemLoader("templates/"))
@@ -102,6 +109,7 @@ def main():
     content = sidebar_tmpl.render(table=table, next_games=next_games)
     with open("output/sidebar.txt", 'w') as f:
         f.write(content)
+    pub_sidebar(content)
 
     content = gameplan_tmpl.render(gameplan=gameplan)
     with open("output/gameplan.txt", 'w') as f:
