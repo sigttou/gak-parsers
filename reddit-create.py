@@ -114,6 +114,7 @@ def get_gp_title(gameplan):
 
 def main():
     reddit = praw.Reddit(user_agent="GAK mod")
+    reddit.validate_on_submit = True
     subreddit = reddit.subreddit("grazerak")
 
     cur_path = os.path.dirname(os.path.abspath(__file__)) + '/'
