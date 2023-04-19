@@ -91,7 +91,7 @@ def pub_sidebar(subreddit, content):
 
 def update_gp_post(reddit, subreddit, title, content):
     # fix search with space fails
-    for post in subreddit.search(title.split()[0], sort='new'):
+    for post in subreddit.search(title.split()[1], sort='new'):
         if post.author == reddit.user.me():
             break
     else:
