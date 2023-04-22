@@ -27,6 +27,9 @@ def get_table(url):
     datasets = get_datasets(url)
     table = []
     for ds in datasets:
+        # fix broken parsing
+        if not len(ds) == 13:
+            continue
         entry = {}
         entry['name'] = \
             ds[2][1].split('<')[0].encode().decode("unicode_escape")
@@ -128,7 +131,7 @@ def main():
     gameplan_tmpl.globals['timestamp'] = timestamp
     table_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
                 "&file=/?proxy=daten/BL2/20222023/tabellen/tabelle" + \
-                "_gesamt_1-23.html"
+                "_gesamt_0.html"
     table = get_table(table_url)
 
     gameplan_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
