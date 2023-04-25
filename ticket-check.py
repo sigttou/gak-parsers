@@ -1,20 +1,22 @@
 #!/usr/bin/env python3.11
+import os
 import requests
+import jinja2
 
 
 def main():
     base_url = "https://ticket.grazerak.at/backend/events/"
     events_ep = "futurePublishedEvents"
 
-    print("<!DOCTYPE html>")
-    print("<html>")
-    print("<body>")
-    for event in requests.get(base_url + events_ep).json():
-        print("<h1>" + event["title"] + "</h1>")
+    cur_path = os.path.dirname(os.path.abspath(__file__)) + '/'
+    templ_path = cur_path + "templates/"
+    jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(templ_path))
+    ticket_tmpl = jenv.get_template("ticket-html.tmpl")
 
+    events = []
+    for event in requests.get(base_url + events_ep).json():
         event_url = base_url + event["id"] + "/"
         chk_url = event_url + "public-stadium-representation-config"
-
         content = requests.get(chk_url).json()
         sold_cnt = 0
         avail_cnt = 0
@@ -24,19 +26,14 @@ def main():
                     sold_cnt += 1
                 if e['seatStatus'] == 'AVAILABLE':
                     avail_cnt += 1
+        entry = {}
+        entry["title"] = event["title"]
+        entry["sold"] = sold_cnt
+        entry["avail"] = avail_cnt
+        events.append(entry)
 
-        print("<p>Available: " + str(avail_cnt) + "</p>")
-        print("<p>Sold (w/o Sponsors, VIP): " + str(sold_cnt) + "</p>")
-        print("<p>Sold (w/o est. 1540 Season tickets " +
-              "w/o Sponsors, VIP, etc.): " +
-              str(sold_cnt - 1540) + "</p>")
-        est_vip = 896  # from SKN home game, not verified
-        print("<p>Sold (w est. 896 Sponsors, VIP): " +
-              str(sold_cnt + est_vip) + "</p>")
-        print("<br>")
+    print(ticket_tmpl.render(events=events))
 
-    print("</body>")
-    print("</html>")
     return
 
     # 5619 (sections 15-25)
