@@ -27,6 +27,9 @@ def main():
 
         print("<p>Available: " + str(avail_cnt) + "</p>")
         print("<p>Sold (w/o Sponsors, VIP): " + str(sold_cnt) + "</p>")
+        print("<p>Sold (w/o est. 1540 Season tickets " +
+              "w/o Sponsors, VIP, etc.): " +
+              str(sold_cnt - 1540) + "</p>")
         est_vip = 896  # from SKN home game, not verified
         print("<p>Sold (w est. 896 Sponsors, VIP): " +
               str(sold_cnt + est_vip) + "</p>")
