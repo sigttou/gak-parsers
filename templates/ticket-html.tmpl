@@ -8,9 +8,9 @@
 {% for event in events %}
 <h1>{{event["title"]}}</h1>
 <p>Available: {{event["avail"]}}</p>
-<p>Sold (w/o Sponsors, VIP): {{event["sold"]}}</p>
-<p>Sold (w/o est. 1540 Season tickets w/o Sponsors, VIP, etc.): {{event["sold"] - 1540}}</p>
-<p>Sold (w est. 896 Sponsors, VIP): {{event["sold"] + 896}}</p>
+<p>Sold (w/o Sponsors, VIP, etc.): {{event["sold"]}}</p>
+<p>Sold (w/o est. Season tickets w/o Sponsors, VIP, etc.): {{event["sold"] - 1540}}</p>
+<p>Sold (w est. Sponsors, VIP, etc.): {{event["sold"] + 896}}</p>
 <br>
 {% endfor %}
 </body>
