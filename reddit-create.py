@@ -24,17 +24,15 @@ def get_datasets(url):
 
 
 def get_table(url):
-    datasets = get_datasets(url)
+    dataset = requests.get(url).json()
+    table_data = dataset['Tabelle']['Runden']['Runde']['Bewerb']
+    table_data = table_data['Tabelle'][2]['Platz']
+
     table = []
-    for ds in datasets:
-        # fix broken parsing
-        if not len(ds) == 13:
-            continue
+    for ds in table_data:
         entry = {}
-        entry['name'] = \
-            ds[2][1].split('<')[0].encode().decode("unicode_escape")
-        entry['points'] = \
-            int(ds[9][1].split('<')[0].encode().decode("unicode_escape"))
+        entry['name'] = ds['Name']
+        entry['points'] = ds['Punkte']
         table.append(entry)
 
     return table
@@ -129,9 +127,8 @@ def main():
     sidebar_tmpl.globals['timestamp'] = timestamp
     gameplan_tmpl = jenv.get_template("gameplan.tmpl")
     gameplan_tmpl.globals['timestamp'] = timestamp
-    table_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
-                "&file=/?proxy=daten/BL2/20222023/tabellen/tabelle" + \
-                "_gesamt_0.html"
+    table_url = "https://www.2liga.at/fileadmin/json/Tabellen/" + \
+                "Tabelle_EL.json"
     table = get_table(table_url)
 
     gameplan_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
