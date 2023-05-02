@@ -3,7 +3,11 @@ Tabelle 2. Liga
 \# | Team | Points
 :-:|---|:-:
 {% for entry in table -%}
+{% if entry['name'] == 'Grazer AK 1902' -%}
+**{{loop.index}}** | **{{entry['name']}}** | **{{entry['points']}}**
+{% else -%}
 {{loop.index}} | {{entry['name']}} | {{entry['points']}}
+{% endif -%}
 {% endfor %}
 
 Nächste Spiele
