@@ -15,7 +15,7 @@ Nächste Spiele
 When? | Who?
 ---|---
 {% for e in next_games -%}
-{% if e['home'] == 'Grazer AK 1902' -%}
+{% if e['home'] == 'GAK 1902' -%}
 **{{e['date']}} {{e['time']}}** | **{{e['home']}} - {{e['away']}}**
 {% else -%}
 {{e['date']}} {{e['time']}} | {{e['home']}} - {{e['away']}}
