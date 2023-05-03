@@ -3,7 +3,7 @@
 \# | When | Who | Where | Result
 ---|---|---|---|---
 {% for e in gameplan if e['league'] -%}
-{% if e['home'] == 'Grazer AK 1902' -%}
+{% if e['home'] == 'GAK 1902' -%}
 **{{loop.index}}.** | **{{e['date']}} {{e['time']}}** | **{{e['away']}}** | **home** | **{{e['res']}}**
 {% else -%}
 {{loop.index}}. | {{e['date']}} {{e['time']}} | {{e['home']}} | away | {{e['res']}}
@@ -15,7 +15,7 @@
 \# | When | Who | Where | Result
 ---|---|---|---|---
 {% for e in gameplan if not e['league'] -%}
-{% if e['home'] == 'Grazer AK 1902' -%}
+{% if e['home'] == 'GAK 1902' -%}
 **{{loop.index}}.** | **{{e['date']}} {{e['time']}}** | **{{e['away']}}** | **home** | **{{e['res']}}**
 {% else -%}
 {{loop.index}}. | {{e['date']}} {{e['time']}} | {{e['home']}} | away | {{e['res']}}

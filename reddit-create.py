@@ -4,23 +4,6 @@ import requests
 import jinja2
 import praw
 from datetime import datetime
-from bs4 import BeautifulSoup
-
-
-def get_datasets(url):
-    html = requests.get(url).text
-    soup = BeautifulSoup(html, features="lxml")
-    html_table = soup.find("table")
-
-    headings = [th.get_text() for th in
-                html_table.find("tr").find_all("th")]
-    datasets = []
-    for row in html_table.find_all("tr")[1:]:
-        dataset = zip(headings,
-                      (td.get_text() for td in row.find_all("td")))
-        datasets.append(tuple(dataset))
-
-    return datasets
 
 
 def get_table(url):
@@ -39,31 +22,27 @@ def get_table(url):
 
 
 def get_gameplan(url):
-    datasets = get_datasets(url)
+    dataset = requests.get(url).json()
     gameplan = []
-    for ds in datasets:
-        if not ds:
-            # just fetch current season
-            break
+    for ds in dataset['all']:
         entry = {}
-        entry['date'] = ds[2][1].split('<')[0]
-        entry['time'] = ds[3][1].split('<')[0]
-        entry['home'] = \
-            ds[4][1].split('<')[0].encode().decode("unicode_escape")
-        entry['away'] = \
-            ds[5][1].split('<')[0].encode().decode("unicode_escape")
-        entry['res'] = ds[6][1].split('\\n')[0].split(' ')[0]
-        entry['league'] = bool(ds[7][1][-1].strip())
+        entry['date'] = ds['datum']
+        entry['time'] = ds['uhrzeit']
+        entry['home'] = ds['heim']
+        entry['away'] = ds['gast']
+        if not ds['heimTore'] is None:
+            entry['res'] = str(ds['heimTore']) + ':' + str(ds['gastTore'])
+        entry['league'] = (ds['league'] == dataset['league'][0]['league'])
 
-        if not entry['res']:
+        if not entry.get('res'):
             entry['res'] = "-:-"
         else:
-            a = int(entry['res'].split(':')[0])
-            b = int(entry['res'].split(':')[1])
+            a = ds['heimTore']
+            b = ds['gastTore']
             res = ''
             if a == b:
                 res = 'D'
-            elif entry['home'] == 'Grazer AK 1902':
+            elif entry['home'] == 'GAK 1902':
                 res = 'W' if a > b else 'L'
             else:
                 res = 'L' if a > b else 'W'
@@ -131,8 +110,7 @@ def main():
                 "Tabelle_EL.json"
     table = get_table(table_url)
 
-    gameplan_url = "https://www.2liga.at/ajax.php?contelPageId=8686" + \
-                   "&file=/?proxy=daten/team/html/6457/spielplan.html"
+    gameplan_url = "https://www.grazerak.at/api/fixtures/0/1"
     gameplan = get_gameplan(gameplan_url)
     next_games = get_next_games(gameplan)
 
