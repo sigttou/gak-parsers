@@ -75,7 +75,7 @@ def update_gp_post(reddit, subreddit, title, content):
     post = None
     for i in range(4):
         try:
-            chk = subreddit.sticky()
+            chk = subreddit.sticky(number=i)
             if chk.title == title and chk.author == reddit.user.me():
                 post = chk
                 break
