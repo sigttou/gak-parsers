@@ -3,6 +3,7 @@ import os
 import requests
 import jinja2
 import praw
+import prawcore
 from datetime import datetime
 
 
@@ -71,11 +72,16 @@ def pub_sidebar(subreddit, content):
 
 
 def update_gp_post(reddit, subreddit, title, content):
-    # fix search with space fails
-    for post in subreddit.search(title.split()[1], sort='new'):
-        if post.author == reddit.user.me():
+    post = None
+    for i in range(4):
+        try:
+            chk = subreddit.sticky()
+            if chk.title == title and chk.author == reddit.user.me():
+                post = chk
+                break
+        except prawcore.exceptions.NotFound:
             break
-    else:
+    if not post:
         post = subreddit.submit(title, selftext="placeholder")
     post.edit(content)
     post.mod.sticky(bottom=False, state=True)
