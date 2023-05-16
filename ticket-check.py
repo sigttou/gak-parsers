@@ -1,10 +1,48 @@
 #!/usr/bin/env python3.11
 import os
+import sqlite3
 import requests
 import jinja2
 
 
+def init_db(db_file):
+    conn = sqlite3.connect(db_file)
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS EVENTS
+    (
+    ID          TEXT        PRIMARY KEY NOT NULL,
+    TITLE       TEXT                    NOT NULL,
+    DATETIME    DATETIME                NOT NULL,
+    SELLFROM    DATETIME                NOT NULL,
+    SELLTO      DATETIME                NOT NULL
+    );''')
+
+    conn.execute('''
+    CREATE TABLE IF NOT EXISTS ENTRIES
+    (
+    MATCH       TEXT        NOT NULL,
+    SOLD        INTEGER     NOT NULL,
+    AVAILABLE   INTEGER     NOT NULL,
+    TIMESTAMP   DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP
+    );''')
+
+    return conn
+
+
+def update_db(conn, event, entry):
+    conn.execute('''
+    INSERT OR IGNORE INTO EVENTS
+    (ID, TITLE, DATETIME, SELLFROM, SELLTO) VALUES
+    (:id, :title, :dateTimeFrom, :publiclyAvailableFrom, :publiclyAvailableTo)
+    ''', event)
+    conn.execute('''
+    INSERT INTO ENTRIES (MATCH, SOLD, AVAILABLE) VALUES
+    (:id, :sold, :avail)''', entry)
+    return
+
+
 def main():
+    conn = init_db('events.db')
     base_url = "https://ticket.grazerak.at/backend/events/"
     events_ep = "futurePublishedEvents"
 
@@ -28,12 +66,17 @@ def main():
                     avail_cnt += 1
         entry = {}
         entry["title"] = event["title"]
+        entry["id"] = event["id"]
         entry["sold"] = sold_cnt
         entry["avail"] = avail_cnt
+
+        update_db(conn, event, entry)
         events.append(entry)
 
     print(ticket_tmpl.render(events=events))
+    conn.commit()
 
+    conn.close()
     return
 
     # 5619 (sections 15-25)
