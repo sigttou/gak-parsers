@@ -1,4 +1,5 @@
 #!/usr/bin/env python3.11
+import sys
 import os
 import sqlite3
 import requests
@@ -41,8 +42,8 @@ def update_db(conn, event, entry):
     return
 
 
-def main():
-    conn = init_db('events.db')
+def main(db_file):
+    conn = init_db(db_file)
     base_url = "https://ticket.grazerak.at/backend/events/"
     events_ep = "futurePublishedEvents"
 
@@ -95,4 +96,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print(sys.argv[0] + " <db_file>")
+        sys.exit(-1)
+    main(sys.argv[1])
