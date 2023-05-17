@@ -1,9 +1,14 @@
 #!/usr/bin/env python3.11
 import sys
 import os
+import io
 import sqlite3
+import datetime
+import base64
 import requests
 import jinja2
+import dateutil.parser
+import matplotlib.pyplot as plt
 
 
 def init_db(db_file):
@@ -34,12 +39,75 @@ def update_db(conn, event, entry):
     conn.execute('''
     INSERT OR IGNORE INTO EVENTS
     (ID, TITLE, DATETIME, SELLFROM, SELLTO) VALUES
-    (:id, :title, :dateTimeFrom, :publiclyAvailableFrom, :publiclyAvailableTo)
+    (:id, :title, :dateTimeFrom, :publiclyAvailableFrom,
+    :publiclyAvailableTo)
     ''', event)
+
     conn.execute('''
     INSERT INTO ENTRIES (MATCH, SOLD, AVAILABLE) VALUES
     (:id, :sold, :avail)''', entry)
     return
+
+
+def draw_graph(db_file):
+    conn = sqlite3.connect('file:' + db_file + '?mode=ro', uri=True)
+    cur = conn.execute('SELECT * FROM events')
+    events = cur.fetchall()
+
+    for idx, entry in enumerate(events):
+        event = {}
+        event['id'] = entry[0]
+        event['title'] = entry[1]
+        event['time'] = dateutil.parser.parse(entry[2])
+        event['sellfrom'] = dateutil.parser.parse(entry[3])
+        event['sellto'] = dateutil.parser.parse(entry[4])
+        events[idx] = event
+
+    plt.xlabel("hours until game")
+    plt.ylabel("tickets sold (online available)")
+
+    for event in events:
+        cur = conn.execute("SELECT * FROM ENTRIES WHERE MATCH=?",
+                           (event['id'],))
+        entries = cur.fetchall()
+        info = []
+        hours = []
+        sold = []
+        for entry in entries:
+            tickets = {}
+            tickets['sold'] = entry[1]
+            tickets['time'] = dateutil.parser.parse(entry[3])
+            # it's actually stored in UTC
+            tickets['time'] = tickets['time'].replace(
+                    tzinfo=datetime.timezone.utc)
+            h_diff = int((event['time']-tickets['time']).total_seconds()
+                         / 3600)
+            tickets['diff'] = h_diff
+            if h_diff not in hours:
+                hours.append(h_diff)
+                sold.append(tickets['sold'])
+            info.append(tickets)
+
+        plt.plot(hours, sold, label=event['title'])
+
+    # todo: remove in future
+    skn_hours = [37, 30, 14, 8, 4, 3, 0]
+    skn_sold = [2906, 3100, 3430, 3800, 4100, 4200, 4500]
+    plt.plot(skn_hours, skn_sold, label='GAK 1902 : SKN St. Pölten')
+
+    bwl_hours = [85, 74, 30, 14, 8, 0]
+    bwl_sold = [2314, 2545, 3000, 3200, 3700, 4700]
+    plt.plot(bwl_hours, bwl_sold, label='GAK 1902 : BW Linz')
+
+    plt.gca().invert_xaxis()
+    plt.gca().xaxis.get_major_locator().set_params(integer=True)
+    plt.legend()
+    tmpfile = io.BytesIO()
+    plt.savefig(tmpfile)
+    img = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
+    plt.close()
+    conn.close()
+    return img
 
 
 def main(db_file):
@@ -74,10 +142,12 @@ def main(db_file):
         update_db(conn, event, entry)
         events.append(entry)
 
-    print(ticket_tmpl.render(events=events))
     conn.commit()
-
     conn.close()
+
+    img = draw_graph(db_file)
+    print(ticket_tmpl.render(events=events, img=img))
+
     return
 
     # 5619 (sections 15-25)
