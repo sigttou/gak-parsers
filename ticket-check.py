@@ -80,12 +80,10 @@ def draw_graph(db_file):
             # it's actually stored in UTC
             tickets['time'] = tickets['time'].replace(
                     tzinfo=datetime.timezone.utc)
-            h_diff = int((event['time']-tickets['time']).total_seconds()
-                         / 3600)
+            h_diff = (event['time']-tickets['time']).total_seconds() / 3600
             tickets['diff'] = h_diff
-            if h_diff not in hours:
-                hours.append(h_diff)
-                sold.append(tickets['sold'])
+            hours.append(h_diff)
+            sold.append(tickets['sold'])
             info.append(tickets)
 
         plt.plot(hours, sold, label=event['title'])
@@ -105,6 +103,7 @@ def draw_graph(db_file):
     tmpfile = io.BytesIO()
     plt.savefig(tmpfile)
     img = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
+
     plt.close()
     conn.close()
     return img
