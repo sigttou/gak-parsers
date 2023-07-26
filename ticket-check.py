@@ -88,15 +88,6 @@ def draw_graph(db_file):
 
         plt.plot(hours, sold, label=event['title'])
 
-    # todo: remove in future
-    skn_hours = [37, 30, 14, 8, 4, 3, 0]
-    skn_sold = [2906, 3100, 3430, 3800, 4100, 4200, 4500]
-    plt.plot(skn_hours, skn_sold, label='GAK 1902 : SKN St. Pölten')
-
-    bwl_hours = [85, 74, 30, 14, 8, 0]
-    bwl_sold = [2314, 2545, 3000, 3200, 3700, 4700]
-    plt.plot(bwl_hours, bwl_sold, label='GAK 1902 : BW Linz')
-
     plt.gca().invert_xaxis()
     plt.gca().xaxis.get_major_locator().set_params(integer=True)
     plt.legend()
@@ -150,6 +141,7 @@ def main(db_file):
     return
 
     # 5619 (sections 15-25)
+    # sector 14 624; usually never selling
     # 65 (VIP loge 1); likely sold out (?)
     # 60 (VIP loge 2); likely sold out (?)
     # 63 (VIP loge 3); likely sold out (?)
