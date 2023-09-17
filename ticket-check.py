@@ -48,10 +48,21 @@ def update_db(conn, event, entry):
     (:id, :sold, :avail)''', entry)
     return
 
-
 def draw_graph(db_file):
     conn = sqlite3.connect('file:' + db_file + '?mode=ro', uri=True)
-    cur = conn.execute('SELECT * FROM events')
+    # select highest sold game
+    # select last game
+    # select future games
+    cur = conn.execute('''
+                        SELECT * FROM (SELECT * FROM events WHERE id IN
+                        (SELECT match FROM entries ORDER BY sold DESC LIMIT 1))
+                        UNION SELECT * FROM
+                        (SELECT * FROM events WHERE datetime < DATE('now')
+                         ORDER BY datetime DESC LIMIT 1)
+                        UNION SELECT * FROM
+                        (SELECT * FROM events WHERE datetime > DATE('now'))
+                        ORDER BY datetime
+                        ''')
     events = cur.fetchall()
 
     for idx, entry in enumerate(events):
