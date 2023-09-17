@@ -117,7 +117,10 @@ def main():
     table = get_table(table_url)
 
     gameplan_url = "https://www.grazerak.at/api/fixtures/0/1"
-    gameplan = get_gameplan(gameplan_url)
+    try:
+        gameplan = get_gameplan(gameplan_url)
+    except requests.exceptions.JSONDecodeError:
+        return -1
     next_games = get_next_games(gameplan)
 
     content = sidebar_tmpl.render(table=table, next_games=next_games)
