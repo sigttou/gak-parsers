@@ -74,6 +74,7 @@ def draw_graph(db_file):
         event['sellto'] = dateutil.parser.parse(entry[4])
         events[idx] = event
 
+    plt.style.use('tableau-colorblind10')
     plt.xlabel("hours until game")
     plt.ylabel("tickets sold (online available)")
 
