@@ -48,6 +48,7 @@ def update_db(conn, event, entry):
     (:id, :sold, :avail)''', entry)
     return
 
+
 def draw_graph(db_file):
     conn = sqlite3.connect('file:' + db_file + '?mode=ro', uri=True)
     # select highest sold game
